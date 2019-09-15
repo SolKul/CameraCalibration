@@ -50,7 +50,8 @@ def ArToPlt(ar_img,figsize=(6,9)):
     plt.imshow(n_img)
 
 
-# -
+# +
+from scipy import linalg
 
 class Camera:
     def __init__(self,P):
@@ -64,15 +65,84 @@ class Camera:
     def project(self,X):
         x=self.P @ X
         x=x/x[2]
-        return x
+        return x    
     def factor(self):
-        K,R=np.linalg.qr(self.P[:,:3])
+        K,R=linalg.rq(P[:,:3])
+        T=np.diag(np.sign(np.diag(K)))
+        if np.linalg.det(T)<0:
+            T[1,1] *= -1
+        
+        self.K= np.dot(K,T)
+        self.R= np.dot(T,R)
+        self.t= np.linalg.inv(self.K) @ self.P[:,3]
+        
+        return self.K, self.R, self.t
+    
+def rotation_matrix(a):
+    """ ベクトルaを軸に回転する3Dの回転行列を返す """
+    R = np.eye(4)
+    R[:3,:3] = linalg.expm([[0,-a[2],a[1]],[a[2],0,-a[0]],[-a[1],a[0],0]])
+    return R
 
+
+# -
+
+K = np.array([[1000,0,500],[0,1000,300],[0,0,1]])
+tmp = rotation_matrix([0,0,1])[:3,:3]
+Rt = np.hstack((tmp,np.array([[50],[40],[30]])))
+cam = Camera(np.dot(K,Rt))
+print(K,'\n',Rt)
+cam.factor()
+print(cam.K,'\n',cam.R)
+
+# +
+P=K @ Rt
+K2,R2=linalg.rq(P[:,:3])
+T=np.diag(np.sign(np.diag(K2)))
+if np.linalg.det(T)<0:
+    T[1,1] *= -1
+
+K2= K2@T
+R= T@R2
+print(K2)
+print(R2)
+# -
+
+np.linalg.det(R2)
 
 P=np.array([[1,2,3,4],[0,1,2,0],[0,1,3,4]])
 c1=Camera(P)
 X=np.array([2,3,-2,3])
 c1.project(X)
+c1.factor()
+c1.K
+np.linalg.det(c1.R)
+
+from scipy.spatial.transform import Rotation as R
+r = R.from_quat([0, 0, np.sin(np.pi/4), np.cos(np.pi/4)])
+
+r.as_dcm()
+np.linalg.det(r.as_dcm())
+
+K=np.array([[3,0,4],[0,4,3],[0,0,1]])
+print(K2)
+K2,R=linalg.rq(K @ r.as_dcm())
+T=np.diag(np.sign(np.diag(K2)))
+if np.linalg.det(T)<0:
+    T[1,1] *= -1
+print(np.linalg.det(K2 @ T))
+print(np.linalg.det(T @ R))
+
+
+
+K,R=linalg.rq(P[:,:3])
+T=np.diag(np.sign(np.diag(K)))
+np.linalg.det(T)
+np.linalg.det(R)
+
+T
+
+c1.factor()
 
 img=imread('DSC01805.JPG')
 
