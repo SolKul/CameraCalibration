@@ -69,8 +69,6 @@ class Camera:
     def factor(self):
         K,R=linalg.rq(self.P[:,:3])
         T=np.diag(np.sign(np.diag(K)))
-        if np.linalg.det(T)<0:
-            T[1,1] *= -1
         
         self.K= np.dot(K,T)
         self.R= np.dot(T,R)
@@ -87,13 +85,44 @@ def rotation_matrix(a):
 
 # -
 
+# $$
+# C=AB\\
+# |C|=|A||B|\\
+# \\
+# K=\left(\begin{array}{ccc}
+# f_x & s & c_x\\
+# 0 & f_y & c_y\\
+# 0 & 0 & 1
+# \end{array}\right)\\
+# \  \\
+# \  \\
+# T=\left(\begin{array}{ccc}
+# sgn(f_x) & 0 & 0\\
+# 0 & sgn(f_y) & 0\\
+# 0 & 0 & sgn(1)
+# \end{array}\right)\\
+# \ \\
+# \ \\
+# sgn(|K|)=sgn(|T|)\\
+# \ \\
+# K'=KT\\
+# \ \\
+# if\ |T|>0\\
+# sgn(|K|)=sgn(|T|)>0\\
+# |K'|=|K||T|>0\\
+# \ \\
+# else\ |T|<0\\
+# sgn(|K|)=sgn(|T|)<0\\
+# |K'|=|K||T|>0\\
+# $$
+
 K = np.array([[1000,0,500],[0,1000,300],[0,0,1]])
 tmp = rotation_matrix([0,0,1])[:3,:3]
 Rt = np.hstack((tmp,np.array([[50],[40],[30]])))
 cam = Camera(np.dot(K,Rt))
 print(K,'\n',Rt)
 cam.factor()
-print(cam.K,'\n',cam.R)
+print(cam.K,'\n',cam.R,'\n',np.linalg.det(cam.K),'\n',np.linalg.det(cam.R))
 
 # +
 P=K @ Rt
