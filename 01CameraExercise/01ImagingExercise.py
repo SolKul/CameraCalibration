@@ -76,6 +76,14 @@ class Camera:
         
         return self.K, self.R, self.t
     
+    def center(self):
+        if self.c is not None:
+            return self.c
+        else:
+            self.factor()
+            self.c= - self.R.T @ self.t
+            return self.c
+    
 def rotation_matrix(a):
     """ ベクトルaを軸に回転する3Dの回転行列を返す """
     R = np.eye(4)
@@ -123,6 +131,7 @@ cam = Camera(np.dot(K,Rt))
 print(K,'\n',Rt)
 cam.factor()
 print(cam.K,'\n',cam.R,'\n',np.linalg.det(cam.K),'\n',np.linalg.det(cam.R))
+cam.center()
 
 # +
 P=K @ Rt
