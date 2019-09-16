@@ -67,7 +67,7 @@ class Camera:
         x=x/x[2]
         return x    
     def factor(self):
-        K,R=linalg.rq(P[:,:3])
+        K,R=linalg.rq(self.P[:,:3])
         T=np.diag(np.sign(np.diag(K)))
         if np.linalg.det(T)<0:
             T[1,1] *= -1
