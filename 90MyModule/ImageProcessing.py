@@ -45,7 +45,7 @@ def imwrite(filename, img, params=None):
     
 def show_img(img,figsize=(6,9),isBGR=True):
     if isBGR:
-        img_cvt=cv2.cvtColor(ar_img,cv2.COLOR_BGR2RGB)
+        img_cvt=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
     else:
         img_cvt=img
     plt.figure(figsize=figsize)

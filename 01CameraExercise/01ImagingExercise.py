@@ -13,42 +13,18 @@
 #     name: python3
 # ---
 
+# %load_ext autoreload
+# %autoreload
+
 # +
-import numpy as np
-import cv2
-import os
-import matplotlib.pyplot as plt
+import sys
+sys.path.append('/home/jovyan/notebooks/CameraCalibration/90MyModule/')
 
-def imread(filename, flags=cv2.IMREAD_COLOR, dtype=np.uint8):
-    try:
-        n = np.fromfile(filename, dtype)
-        img = cv2.imdecode(n, flags)
-        return img
-    except Exception as e:
-        print(e)
-        return None
-    
+import ImageProcessing as ip
+# -
 
-def imwrite(filename, img, params=None):
-    try:
-        ext = os.path.splitext(filename)[1]
-        result, n = cv2.imencode(ext, img, params)
-
-        if result:
-            with open(filename, mode='w+b') as f:
-                n.tofile(f)
-            return True
-        else:
-            return False
-    except Exception as e:
-        print(e)
-        return False
-    
-def ArToPlt(ar_img,figsize=(6,9)):
-    plt.figure(figsize=figsize)
-    n_img=cv2.cvtColor(ar_img,cv2.COLOR_BGR2RGB)
-    plt.imshow(n_img)
-
+img=ip.imread('01JudeaPearl.jpg')
+ip.show_img(img)
 
 # +
 from scipy import linalg
