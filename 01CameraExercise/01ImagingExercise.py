@@ -45,7 +45,7 @@ class Camera:
     def factor(self):
         K,R=linalg.rq(self.P[:,:3])
         T=np.diag(np.sign(np.diag(K)))
-        
+        #K,Rの行列式を正にする
         self.K= np.dot(K,T)
         self.R= np.dot(T,R)
         self.t= np.linalg.inv(self.K) @ self.P[:,3]
@@ -69,9 +69,13 @@ def rotation_matrix(a):
 
 # -
 
+# 行列式と行列の積の関係
 # $$
 # C=AB\\
 # |C|=|A||B|\\
+# $$
+# カメラ行列$K$とその対角成分の符号を取ったもの$T$
+# $$
 # \\
 # K=\left(\begin{array}{ccc}
 # f_x & s & c_x\\
@@ -89,6 +93,9 @@ def rotation_matrix(a):
 # \ \\
 # sgn(|K|)=sgn(|T|)\\
 # \ \\
+# $$
+# その積$K'$の行列式は必ず正
+# $$
 # K'=KT\\
 # \ \\
 # if\ |T|>0\\
