@@ -18,6 +18,8 @@
 
 # +
 import sys
+import numpy as np
+import cv2
 sys.path.append('/home/jovyan/notebooks/CameraCalibration/90MyModule/')
 
 import ImageProcessing as ip
@@ -25,6 +27,39 @@ import ImageProcessing as ip
 
 img=ip.imread('01JudeaPearl.jpg')
 ip.show_img(img)
+
+img_for_camera_calibration=ip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
+ip.show_img(img_for_camera_calibration)
+
+#本の左上にプロットしてみる
+img_for_edit=img_for_camera_calibration.copy()
+cv2.circle(img_for_edit,(2789,1140),50,(255,255,255),thickness=-1)
+ip.show_img(img_for_edit)
+
+# 写真上での四隅の座標  
+# (左上の隅からのx座標、y座標)  
+# 左上(2789,1140)   
+# 右上(3910,1135)  
+# 左下(2782,2685)  
+# 右下(3902,2693)
+
+#左上-左下→縦の長さ
+height_in_image=np.sqrt((2789-2782)**2+(1140-2685)**2)
+#左下-右下→横の長さ
+width_in_image=np.sqrt((2783-3902)**2+(2685-2693)**2)
+print('画像上で高さ%d、幅%d' % (height_in_image , width_in_image))
+
+# 実際の本は  
+# 縦216mm    
+# 横153mm  
+# 距離は720mm
+
+# $f_x=\frac{dx}{dX}dZ$  
+# $f_y=\frac{dy}{dY}dZ$  
+
+fx=width_in_image/153*720
+fy=height_in_image/216*720
+print('横方向の焦点距離f_x:%d\n縦方向の焦点距離f_y:%d' % (fx,fy))
 
 # +
 from scipy import linalg
