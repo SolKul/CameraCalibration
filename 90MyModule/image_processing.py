@@ -43,12 +43,26 @@ def imwrite(filename, img, params=None):
         print(e)
         return False
     
-def show_img(img,figsize=(6,9),isBGR=True):
+def show_img(img,figsize=(6,9),isBGR=True,show_as_it_is=False,show_axis=False):
     if img is None:
         raise ValueError("Image is None")
-    if isBGR:
-        img_cvt=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-    else:
-        img_cvt=img
-    plt.figure(figsize=figsize)
-    plt.imshow(img_cvt)
+    if len(img.shape)==3:
+        if isBGR:
+            img_cvt=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        else:
+            img_cvt=img
+        plt.figure(figsize=figsize)
+        plt.imshow(img_cvt)
+    elif len(img.shape)==2:
+        if show_as_it_is:
+            img_show=img.astype(np.uint8)
+            plt.figure(figsize=figsize)
+            plt.imshow(img_show,cmap='gray',vmax=255)
+        else:
+            min_intens=img.min()
+            max_intens=img.max()
+            img_show=((img-min_intens)/(max_intens-min_intens)*255).astype(np.uint8)
+            plt.figure(figsize=figsize)
+            plt.imshow(img_show,cmap='gray')
+    if not(show_axis):
+        plt.axis('off')

@@ -25,7 +25,253 @@ sys.path.append('../90MyModule/')
 import image_processing as mip
 import desc_val as mdv
 import camera as mc
+import feature_detection as mfd
 # -
+
+import matplotlib.pyplot as plt
+
+img_for_camera_calibration=mip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
+mip.show_img(img_for_camera_calibration)
+img_math_test=mip.imread('CalibrationImage/MatchTest.jpg')
+mip.show_img(img_math_test)
+
+mfd.compute_harris_ncc_and_plot(im1,im2)
+
+cv2.AKAZE_create()
+
+cv2.__version__
+
+sys.version
+
+im=img_for_camera_calibration.copy()
+im=cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+mip.show_img(im)
+
+harrisim=mfd.compute_harris_response(im)
+
+filtered_coords=mfd.search_harris_point(harrisim,min_dist=100)
+
+mip.show_img(img_for_camera_calibration,figsize=(10,10))
+plt.plot([p[1] for p in filtered_coords],[p[0] for p in filtered_coords],'*')
+
+len(filtered_coords)
+
+desc=mfd.extract_pixels_near_coord(im,filtered_coords)
+match_indices=mfd.extract_same_matches(desc,desc)
+# mfd.extract_max_ncc_indices(desc,desc)
+
+# +
+im1=img_for_camera_calibration.copy()
+im1=cv2.cvtColor(im1,cv2.COLOR_BGR2GRAY)
+mip.show_img(im1)
+
+im2=img_math_test.copy()
+im2=cv2.cvtColor(im2,cv2.COLOR_BGR2GRAY)
+mip.show_img(im2)
+# -
+
+wid =5
+harrisim = mfd.compute_harris_response(im1,5)
+filtered_coords1 = mfd.search_harris_point(harrisim,100)
+d1 = mfd.extract_pixels_near_coord(im1,filtered_coords1,wid)
+
+harrisim = mfd.compute_harris_response(im2,5)
+filtered_coords2 = mfd.search_harris_point(harrisim,100)
+d2 = mfd.extract_pixels_near_coord(im2,filtered_coords2,wid)
+
+match_indices=mfd.extract_same_matches(d1,d2)
+
+mfd.plot_matches(im1,im2,filtered_coords1,filtered_coords2,match_indices,figsize=(20,10))
+
+im1=mip.imread('messi5.jpg')
+mip.show_img(im1)
+im2=mip.imread('JudeaPearl.jpg')
+mip.show_img(im2)
+
+im1.shape
+
+np.zeros((height2-height1,*im1.shape[1:])).shape
+
+im3 = mfd.concatenate_img_horiz(im,im)
+
+
+filtered_coords
+
+locs1=filtered_coords
+locs2=filtered_coords
+
+mfd.plot_matches(im,im,locs1,locs2,match_indices,figsize=(20,10))
+
+im1=im
+im3=mfd.concatenate_img_horiz(im,im)
+mip.show_img(im3,figsize=(20,10))
+width1 = im1.shape[1]
+for i,m in enumerate(matchs_indices):
+    if m>=0:
+        plt.plot([locs1[i][1],locs2[m][1]+width1],[locs1[i][0],locs2[m][0]],'c')
+plt.axis('off')
+
+mip.show_img(im3,figsize=(20,10))
+
+# +
+# im1=im
+# im2=im
+height1 = im1.shape[0]
+height2 = im2.shape[0]
+
+dimension1=len(im1.shape)
+dimension2=len(im2.shape)
+
+if (dimension1==2) & (dimension2==2):
+    if height1 < height2:
+        im1_cvt = np.concatenate((im1,np.zeros((height2-height1,im1.shape[1]))),axis=0)
+        im2_cvt = im2.copy()
+    elif height1 > height2:
+        im1_cvt = im1.copy()
+        im2_cvt = np.concatenate((im2,np.zeros((height1-height2,im2.shape[1]))),axis=0)
+else:
+    if (dimension1==3) & (dimension2==2):
+        im1_cvt = im1.copy()
+        im2_cvt=cv2.cvtColor(im2,cv2.COLOR_GRAY2BGR)
+    elif (dimension1==2) & (dimension2==3):
+        im1_cvt=cv2.cvtColor(im1,cv2.COLOR_GRAY2BGR)
+        im2_cvt = im2.copy()
+    if height1 < height2:
+        im1_cvt = np.concatenate((im1,np.zeros((height2-height1,*im1.shape[1:]))),axis=0)
+        im2_cvt = im2.copy()
+    elif height1 > height2:
+        im1_cvt = im1.copy()
+        im2_cvt = np.concatenate((im2,np.zeros((height1-height2,*im2.shape[1:]))),axis=0)
+
+im_c=np.concatenate((im1_cvt,im2_cvt),axis=1).astype(np.uint8)
+mip.show_img(im_c)
+# -
+
+height2-height1
+
+np.zeros((height2-height1,*im1.shape[1:])).shape
+
+im1_cvt.shape
+
+im_c.min()
+
+im2.shape
+
+im1.shape
+
+# +
+desc1=desc
+desc2=desc
+
+n=len(desc1[0])
+
+#対応点ごとの距離
+d = -np.ones((len(desc1),len(desc2)))
+for i in range(len(desc1)):
+    for j in range(len(desc2)):
+        d1 = (desc1[i] - np.mean(desc1[i])) / np.std(desc1[i])
+        d2 = (desc2[j] - np.mean(desc2[j])) / np.std(desc2[j])
+        ncc_value = np.sum(d1 * d2) / (n-1)
+        if ncc_value > threshold:
+            d[i,j] = ncc_value
+ndx = np.argsort(-d)
+matchs_indices = ndx[:,0]
+#matchs_indicesは画像1と画像2の記述子のうち、
+#画像1から画像2への相関関数が最大のもののindex
+# -
+
+d[:10,:10]
+
+# +
+desc=mfd.extract_pixels_near_coord(im,filtered_coords)
+matches_12=mfd.extract_max_ncc_indices(desc,desc)
+matches_21=mfd.extract_max_ncc_indices(desc,desc)
+#matchs_12は画像1と画像2の記述子のうち、
+#画像1から画像2への相関関数が最大のもののindex
+
+ndx_12= np.where(matches_12 >= 0)[0]
+
+# for n in ndx_12:
+#     if matches_21[matches_12[n]] != n:
+#         matches_12[n] = -1
+# -
+
+match21[matches_12[1]]
+
+desc
+
+desc=[]
+wid=5
+for coords in filtered_coords:
+    patch=im[(coords[0]-wid):(coords[0]+wid),
+                (coords[1]-wid):(coords[1]+wid)].flatten()
+    desc.append(patch)
+
+
+# +
+threshold = 0.5
+desc1=desc
+desc2=desc.copy()
+n=len(desc1[0])
+
+d=-np.ones((len(desc1),len(desc2)))
+for i in range(len(desc1)):
+    for j in range(len(desc2)):
+        d1 = (desc1[i] - np.mean(desc1[i])) / np.std(desc1[i])
+        d2 = (desc2[i] - np.mean(desc2[i])) / np.std(desc2[i])
+        ncc_value = np.sum(d1 * d2) / (n-1)
+        if ncc_value > threshold:
+            d[i,j] = ncc_value
+ndx = np.argsort(-d)
+matchscores = ndx[:,0]
+# -
+
+ ndx
+
+np.argsort([3,2,31],order=)
+
+mfd.compute_harris_response(im)
+
+threshold=0.1
+corner_threshold=harrisim.max()*threshold
+harrisim_t=(harrisim > corner_threshold) *1
+
+coords = np.array(harrisim_t.nonzero()).T
+
+[c for c in coords]
+
+candidate_values = [harrisim[c[0],c[1]] for c in coords]
+
+index = np.argsort(candidate_values)
+min_dist=10
+allowed_locations=np.zeros(harrisim.shape)
+allowed_locations[min_dist:-min_dist,min_dist:-min_dist]=1
+
+filtered_coords = []
+for i in index:
+    if allowed_locations[coords[i,0],coords[i,1]] == 1:
+        filtered_coords.append(coords[i])
+        allowed_locations[(coords[i,0]-min_dist):(coords[i,0]+min_dist),
+                         (coords[i,1]-min_dist):(coords[i,1]+min_dist)] = 0
+filtered_coords
+
+mip.show_img(img_for_camera_calibration,figsize=(10,10))
+plt.plot([p[1] for p in filtered_coords],[p[0] for p in filtered_coords],'*')
+
+import matplotlib.pyplot as plt
+
+img=im
+min_intens=img.min()
+max_intens=img.max()
+img_show=((img-min_intens)/(max_intens-min_intens)*255).astype(np.uint8)
+plt.figure()
+plt.imshow(img_show,cmap='gray')
+
+
+
+im
+
+plt.imshow(im)
 
 mdv.desc_array(img_for_camera_calibration,globals())
 
@@ -33,9 +279,6 @@ mc.calculate_camera_matrix_w_sz(sz=(100,200))
 
 img=ip.imread('01JudeaPearl.jpg')
 ip.show_img(img)
-
-img_for_camera_calibration=ip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
-ip.show_img(img_for_camera_calibration)
 
 #本の左上にプロットしてみる
 img_for_edit=img_for_camera_calibration.copy()
