@@ -44,6 +44,8 @@ def imwrite(filename, img, params=None):
         return False
     
 def show_img(img,figsize=(6,9),isBGR=True):
+    if img is None:
+        raise ValueError("Image is None")
     if isBGR:
         img_cvt=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
     else:

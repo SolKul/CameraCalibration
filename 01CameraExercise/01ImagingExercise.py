@@ -20,13 +20,18 @@
 import sys
 import numpy as np
 import cv2
-sys.path.append('/home/jovyan/notebooks/CameraCalibration/90MyModule/')
+sys.path.append('../90MyModule/')
 
-import ImageProcessing as ip
+import image_processing as mip
+import desc_val as mdv
 # -
+
+mdv.desc_array(img_for_camera_calibration,globals())
 
 img=ip.imread('01JudeaPearl.jpg')
 ip.show_img(img)
+
+# ![カメラ行列の原理](https://docs.opencv.org/2.4/_images/pinhole_camera_model.png)
 
 img_for_camera_calibration=ip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
 ip.show_img(img_for_camera_calibration)
@@ -100,6 +105,11 @@ def rotation_matrix(a):
     R = np.eye(4)
     R[:3,:3] = linalg.expm([[0,-a[2],a[1]],[a[2],0,-a[0]],[-a[1],a[0],0]])
     return R
+
+def calculate_camera_matrix_w_sz(f,sz):
+    fx_orig,fy_orig=f
+    row,col=sz
+    fx=fx_orig * col /
 
 
 # -
