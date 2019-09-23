@@ -24,14 +24,15 @@ sys.path.append('../90MyModule/')
 
 import image_processing as mip
 import desc_val as mdv
+import camera as mc
 # -
 
 mdv.desc_array(img_for_camera_calibration,globals())
 
+mc.calculate_camera_matrix_w_sz(sz=(100,200))
+
 img=ip.imread('01JudeaPearl.jpg')
 ip.show_img(img)
-
-# ![カメラ行列の原理](https://docs.opencv.org/2.4/_images/pinhole_camera_model.png)
 
 img_for_camera_calibration=ip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
 ip.show_img(img_for_camera_calibration)
@@ -65,92 +66,6 @@ print('画像上で高さ%d、幅%d' % (height_in_image , width_in_image))
 fx=width_in_image/153*720
 fy=height_in_image/216*720
 print('横方向の焦点距離f_x:%d\n縦方向の焦点距離f_y:%d' % (fx,fy))
-
-# +
-from scipy import linalg
-
-class Camera:
-    def __init__(self,P):
-        '''カメラモデルP=K[R|t]を初期化する'''
-        self.P=P
-        self.K=None 
-        self.R=None
-        self.t=None
-        self.c=None
-
-    def project(self,X):
-        x=self.P @ X
-        x=x/x[2]
-        return x    
-    def factor(self):
-        K,R=linalg.rq(self.P[:,:3])
-        T=np.diag(np.sign(np.diag(K)))
-        #K,Rの行列式を正にする
-        self.K= np.dot(K,T)
-        self.R= np.dot(T,R)
-        self.t= np.linalg.inv(self.K) @ self.P[:,3]
-        
-        return self.K, self.R, self.t
-    
-    def center(self):
-        if self.c is not None:
-            return self.c
-        else:
-            self.factor()
-            self.c= - self.R.T @ self.t
-            return self.c
-    
-def rotation_matrix(a):
-    """ ベクトルaを軸に回転する3Dの回転行列を返す """
-    R = np.eye(4)
-    R[:3,:3] = linalg.expm([[0,-a[2],a[1]],[a[2],0,-a[0]],[-a[1],a[0],0]])
-    return R
-
-def calculate_camera_matrix_w_sz(f,sz):
-    fx_orig,fy_orig=f
-    row,col=sz
-    fx=fx_orig * col /
-
-
-# -
-
-# 行列式と行列の積の関係
-# $$
-# C=AB\\
-# |C|=|A||B|\\
-# $$
-# カメラ行列$K$とその対角成分の符号を取ったもの$T$
-# $$
-# \\
-# K=\left(\begin{array}{ccc}
-# f_x & s & c_x\\
-# 0 & f_y & c_y\\
-# 0 & 0 & 1
-# \end{array}\right)\\
-# \  \\
-# \  \\
-# T=\left(\begin{array}{ccc}
-# sgn(f_x) & 0 & 0\\
-# 0 & sgn(f_y) & 0\\
-# 0 & 0 & sgn(1)
-# \end{array}\right)\\
-# \ \\
-# \ \\
-# sgn(|K|)=sgn(|T|)\\
-# \ \\
-# $$
-# その積$K'$の行列式は必ず正
-# $$
-# K'=KT\\
-# \ \\
-# if\ |T|>0\\
-# sgn(|K|)=sgn(|T|)>0\\
-# |K'|=|K||T|>0\\
-# \ \\
-# else\ |T|<0\\
-# sgn(|K|)=sgn(|T|)<0\\
-# |K'|=|K||T|>0\\
-# $$
 
 K = np.array([[1000,0,500],[0,1000,300],[0,0,1]])
 tmp = rotation_matrix([0,0,1])[:3,:3]
