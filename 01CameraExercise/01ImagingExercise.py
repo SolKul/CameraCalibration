@@ -30,12 +30,117 @@ import feature_detection as mfd
 
 import matplotlib.pyplot as plt
 
+
+def expand(image, ratio):
+    h, w = image.shape[:2]
+    src = np.array([[0.0, 0.0],[0.0, 1.0],[1.0, 0.0]], np.float32)
+    dest = src * ratio
+    affine = cv2.getAffineTransform(src, dest)
+    return cv2.warpAffine(image, affine, (2*w, 2*h), cv2.INTER_LANCZOS4) # 補間法も指定できる
+
+
+# +
+ratio=0.3
+
+img_for_camera_calibration=mip.imread('CalibrationImage/FeatureDetection00001.JPG')
+im1=expand(img_for_camera_calibration,ratio)
+im1=im1[:int(4000*ratio),:int(6000*ratio)]
+mip.show_img(im1,show_axis=True)
+
+img_math_test=mip.imread('CalibrationImage/FeatureDetection00003.JPG')
+im2=expand(img_math_test,ratio)
+im2=im2[:int(4000*ratio),:int(6000*ratio)]
+mip.show_img(im2,show_axis=True)
+# -
+
+
+
+# +
+akaze = cv2.AKAZE_create()
+
+kp1, des1 = akaze.detectAndCompute(im1,None)
+kp2, des2 = akaze.detectAndCompute(im2,None)
+
+# Brute-Force Matcher生成
+# create BFMatcher object
+bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+matches = bf.match(des1, des2)
+matches = sorted(matches, key = lambda x:x.distance)
+img3 = cv2.drawMatches(im1, kp1, im2, kp2, matches[:100], None, flags=2)
+mip.show_img(img3,figsize=(20,30))
+
+# +
+ratio=0.3
+
 img_for_camera_calibration=mip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
-mip.show_img(img_for_camera_calibration)
+im1=expand(img_for_camera_calibration,ratio)
+im1=im1[:int(4000*ratio),:int(6000*ratio)]
+mip.show_img(im1,show_axis=True)
+
 img_math_test=mip.imread('CalibrationImage/MatchTest.jpg')
-mip.show_img(img_math_test)
+im2=expand(img_math_test,ratio)
+im2=im2[:int(4000*ratio),:int(6000*ratio)]
+mip.show_img(im2,show_axis=True)
+
+# +
+akaze = cv2.AKAZE_create()
+
+kp1, des1 = akaze.detectAndCompute(im1,None)
+kp2, des2 = akaze.detectAndCompute(im2,None)
+
+# Brute-Force Matcher生成
+# create BFMatcher object
+bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+matches = bf.match(des1, des2)
+matches = sorted(matches, key = lambda x:x.distance)
+img3 = cv2.drawMatches(im1, kp1, im2, kp2, matches[:10], None, flags=2)
+mip.show_img(img3,figsize=(20,30))
+# -
+
+from scipy import ndimage 
+
+ndimage.affine_transform
+
+mip.imwrite('match_result.jpg',img3)
 
 mfd.compute_harris_ncc_and_plot(im1,im2)
+
+mdv.desc_array(img_for_camera_calibration)
+
+ratio=0.1
+im_expand=expand(img_for_camera_calibration,ratio)
+im_expand=im_expand[:int(4000*ratio),:int(6000*ratio)]
+mip.show_img(im_expand,show_axis=True)
+
+im1=cv2.cvtColor(im_expand,cv2.COLOR_BGR2GRAY)
+mip.show_img(im1,show_axis=True)
+
+brisk=cv2.BRISK_create()
+
+kp1, des1 = brisk.detectAndCompute(im1,None)
+
+len(kp1)
+
+des1[0]
+
+
+
+mip.show_img(img_for_camera_calibration)
+
+
+
+akaze = cv2.AKAZE_create()
+
+mip.imwrite('match_result.jpg',img3)
+
+matches_s[2].distance
+
+bf.getDefaultName()
+
+im1 = cv2.cvtColor(img_for_camera_calibration,cv2.COLOR_BGR2GRAY)
+mip.show_img(im1)
+
+matches = bf.knnMatch
 
 cv2.AKAZE_create()
 
