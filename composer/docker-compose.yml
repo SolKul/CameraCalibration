@@ -1,0 +1,13 @@
+version: '3'
+services:
+    cameracalibration:
+        build: notebook
+        container_name: camera-calibration
+        ports:
+            - '8892:8888'
+        volumes:
+            - "c:/FWS/02Docker/CameraCalibration/WorkSpace:/home/jovyan/notebooks"
+        environment: 
+            GRANT_SUDO: "yes"
+        command: 
+            start-notebook.sh
