@@ -1,0 +1,10 @@
+version: '3'
+services:
+  base:
+      build: base
+      image: camera_calibration:base
+
+  develop:
+      build: develop
+      image: camera_calibration:develop
+#docker-composeではbuildの順番は制御できない
