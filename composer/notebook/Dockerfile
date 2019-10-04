@@ -1,4 +1,4 @@
-FROM jupyter/datascience-notebook
+FROM confirmed:1
 
 USER root
 
