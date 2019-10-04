@@ -8,8 +8,8 @@ services:
             - '8892:8888'
         volumes:
             - "../works:/home/jovyan/works"
-        # tty: true
-        # stdin_open : true
+        tty: true
+        stdin_open : true
         
         # environment: 
         #     GRANT_SUDO: "yes"

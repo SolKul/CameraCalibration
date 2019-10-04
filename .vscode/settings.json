@@ -1,0 +1,6 @@
+{
+    "files.exclude": {
+        "**/*.ipynb": true,
+        "**/*checkpoints*": true
+    }
+}
