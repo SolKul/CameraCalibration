@@ -1,20 +1,20 @@
 FROM camera_calibration:develop
 
 USER root
-RUN apt install -y libgl1-mesa-dev/=18.3.6-2 
-RUN apt install -y vim=2:8.1.0875-5
+# RUN apt install -y libgl1-mesa-dev/=18.3.6-2 
+# RUN apt install -y vim=2:8.1.0875-5
 
-USER jovyan
-RUN conda install -y -c conda-forge jupyter_contrib_nbextensions=0.5.1=py37_0
-RUN jupyter contrib nbextension install --user
+# USER jovyan
+# RUN conda install -y -c conda-forge jupyter_contrib_nbextensions=0.5.1=py37_0
+# RUN jupyter contrib nbextension install --user
 
 #sudo -u jovyan conda install -c conda-forge jupyter_contrib_nbextensions=0.5.1=py37_0  
 #sudo -u jovyan jupyter contrib nbextension install --user 
 
-RUN conda install -y -c conda-forge jupytext=1.2.4=0
-RUN echo 'c.NotebookApp.contents_manager_class = "jupytext.TextFileContentsManager"\n\
-c.ContentsManager.default_jupytext_formats = "ipynb,py"'\
->> /home/jovyan/.jupyter/jupyter_notebook_config.py
+# RUN conda install -y -c conda-forge jupytext=1.2.4=0
+# RUN echo 'c.NotebookApp.contents_manager_class = "jupytext.TextFileContentsManager"\n\
+# c.ContentsManager.default_jupytext_formats = "ipynb,py"'\
+# >> /home/jovyan/.jupyter/jupyter_notebook_config.py
 
 #conda search -c conda-forge --f jupytext
 #sudo -u jovyan conda install -c conda-forge jupytext=1.2.4=0
@@ -22,7 +22,7 @@ c.ContentsManager.default_jupytext_formats = "ipynb,py"'\
 # c.ContentsManager.default_jupytext_formats = "ipynb,py"'\
 # >> /home/jovyan/.jupyter/jupyter_notebook_config.py
 
-RUN conda install -y -c conda-forge opencv=4.1.1=py37hd64ca61_0
+# RUN conda install -y -c conda-forge opencv=4.1.1=py37hd64ca61_0
 
 # conda search -c conda-forge opencv
 #sudo -u jovyan conda install -c conda-forge opencv=4.1.1=py37hd64ca61_0
