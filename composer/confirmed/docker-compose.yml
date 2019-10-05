@@ -4,7 +4,7 @@ services:
       build: base
       image: camera_calibration:base
 
-  develop:
-      build: develop
-      image: camera_calibration:develop
+#   develop:
+#       build: develop
+#       image: camera_calibration:develop
 #docker-composeではbuildの順番は制御できない

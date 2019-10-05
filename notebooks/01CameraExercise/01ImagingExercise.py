@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.4'
-#       jupytext_version: 1.2.3
+#       jupytext_version: 1.2.4
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -76,6 +76,7 @@ img_for_camera_calibration=mip.imread('CalibrationImage/ImageforCameraCalibratio
 im1=expand(img_for_camera_calibration,ratio)
 im1=im1[:int(4000*ratio),:int(6000*ratio)]
 mip.show_img(im1,show_axis=True)
+# -
 
 img_math_test=mip.imread('CalibrationImage/MatchTest.jpg')
 im2=expand(img_math_test,ratio)

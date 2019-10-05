@@ -7,11 +7,11 @@ services:
         ports:
             - '8892:8888'
         volumes:
-            - "../works:/home/jovyan/works"
-        tty: true
-        stdin_open : true
-        
-        # environment: 
-        #     GRANT_SUDO: "yes"
-        # command: 
-        #     start-notebook.sh
+            - "../notebooks:/home/jovyan/notebooks"
+        # tty: true
+        # stdin_open : true
+        # env_file: my_env.txt
+        environment: 
+            GRANT_SUDO: "yes"
+        command: 
+            "start-notebook.sh --NotebookApp.password=${NotebookApp_password}"
