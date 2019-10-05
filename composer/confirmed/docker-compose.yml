@@ -3,7 +3,8 @@ services:
   base:
       build: base
       image: camera_calibration:base
-
+      # environment: 
+      #     GRANT_SUDO: "yes"
 #   develop:
 #       build: develop
 #       image: camera_calibration:develop
