@@ -13,5 +13,6 @@ services:
         # env_file: my_env.txt
         environment: 
             GRANT_SUDO: "yes"
+            PYTHONPATH: "/home/jovyan/notebooks/my_modules"
         command: 
             "start-notebook.sh --NotebookApp.password=${NotebookApp_password}"
