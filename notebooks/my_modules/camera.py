@@ -18,8 +18,13 @@ import numpy as np
 from scipy import linalg
 
 class Camera:
+    '''
+    カメラ行列Pを与えてカメラオブジェクトを作るモデル。
+    
+    Args:
+        P (array):カメラ行列P=K[R|t]。
+    '''
     def __init__(self,P):
-        '''カメラモデルP=K[R|t]を初期化する'''
         self.P=P
         self.K=None 
         self.R=None
@@ -57,7 +62,7 @@ def rotation_matrix(a):
 
 def calculate_camera_matrix_w_sz(sz,sz_orig=(6000,4000),lens='PZ',f_orig=(4188,4186)):
     """
-    異なる解像度でのカメラ行列を計算する関数
+    異なる解像度でのカメラの内部パラメータKを計算する関数
     Args:
         sz (int):扱う画像サイズ。もともとの画像から縮小していた場合など。
         sz_orig (int):(6000,4000)はα6000で24MPで撮影したときの解像度
@@ -134,7 +139,7 @@ def calculate_camera_matrix_w_sz(sz,sz_orig=(6000,4000),lens='PZ',f_orig=(4188,4
 #
 #
 # $P=K(R|t)$  
-# $K$:カメラ行列  
+# $K$:内部パラメータ  
 # $$
 # \\
 # K=\left(\begin{array}{ccc}
@@ -148,7 +153,7 @@ def calculate_camera_matrix_w_sz(sz,sz_orig=(6000,4000),lens='PZ',f_orig=(4188,4
 # $c_x,c_y$左端から、画像中心までの距離。$x$を左端からの座標系に戻すために必要  
 # $R$:回転行列(3×3)  
 # $t$:並行移動(3×1)  
-# $P$:Projection行列、3次元座標を画像上の2次元座標に射影する行列  
+# $P$:カメラ行列、3次元座標を画像上の2次元座標に射影する行列  
 # $\lambda,W$:よくわからん
 
 # 行列式と行列の積の関係

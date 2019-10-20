@@ -136,3 +136,23 @@ print('画像上で高さ%d、幅%d' % (height_in_image , width_in_image))
 fx=width_in_image/153*800
 fy=height_in_image/216*800
 print('横方向の焦点距離f_x:%d\n縦方向の焦点距離f_y:%d' % (fx,fy))
+
+# +
+ratio=0.2
+
+im1=ip.imread('CalibrationImage/800-250-200.JPG')
+#画像を縮小
+im1=cv2.resize(im1,None,fx=ratio,fy=ratio,interpolation=cv2.INTER_AREA)
+ip.show_img(im1,show_axis=True)
+# -
+
+K = camera.calculate_camera_matrix_w_sz(im1.shape[1::-1],lens='PZ')
+P = K@ np.hstack([np.eye(3),np.zeros([3,1])])
+cam1=camera.Camera(P)
+
+np.hstack([np.eye(3),np.zeros([3,1])])
+
+xk=np.array([250,200,800,1])
+cam1.project(xk)
+
+
