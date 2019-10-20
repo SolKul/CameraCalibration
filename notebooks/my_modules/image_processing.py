@@ -66,3 +66,4 @@ def show_img(img,figsize=(6,9),isBGR=True,show_as_it_is=False,show_axis=False):
             plt.imshow(img_show,cmap='gray')
     if not(show_axis):
         plt.axis('off')
+        plt.show()

@@ -179,7 +179,7 @@ for i in range(10):
     m=matches[i]
     key_point_pt=kp1[m.queryIdx].pt
 #     key_point_pt=tuple([int(value) for value in key_point_pt])
-    
+
 
 # +
 
@@ -188,16 +188,15 @@ tp=np.array([kp1[m.trainIdx].pt for m in matches[:100]])
 # +
 ratio=0.3
 
-img_for_camera_calibration=mip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
+img_for_camera_calibration=ip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
 im1=expand(img_for_camera_calibration,ratio)
 im1=im1[:int(4000*ratio),:int(6000*ratio)]
-mip.show_img(im1,show_axis=True)
-# -
+ip.show_img(im1,show_axis=True)
 
-img_math_test=mip.imread('CalibrationImage/MatchTest.jpg')
+img_math_test=ip.imread('CalibrationImage/MatchTest.jpg')
 im2=expand(img_math_test,ratio)
 im2=im2[:int(4000*ratio),:int(6000*ratio)]
-mip.show_img(im2,show_axis=True)
+ip.show_img(im2,show_axis=True)
 
 # +
 akaze = cv2.AKAZE_create()
@@ -524,7 +523,7 @@ print('画像上で高さ%d、幅%d' % (height_in_image , width_in_image))
 # 縦216mm    
 # 横153mm  
 # 距離は720mm
-
+#
 # $f_x=\frac{dx}{dX}dZ$  
 # $f_y=\frac{dy}{dY}dZ$  
 
@@ -532,10 +531,14 @@ fx=width_in_image/153*720
 fy=height_in_image/216*720
 print('横方向の焦点距離f_x:%d\n縦方向の焦点距離f_y:%d' % (fx,fy))
 
+cv2.calibrateCamera()
+
+np.mgrid[:6,:9]
+
 K = np.array([[1000,0,500],[0,1000,300],[0,0,1]])
-tmp = rotation_matrix([0,0,1])[:3,:3]
+tmp = camera.rotation_matrix([0,0,1])[:3,:3]
 Rt = np.hstack((tmp,np.array([[50],[40],[30]])))
-cam = Camera(np.dot(K,Rt))
+cam = camera.camera(np.dot(K,Rt))
 print(K,'\n',Rt)
 cam.factor()
 print(cam.K,'\n',cam.R,'\n',np.linalg.det(cam.K),'\n',np.linalg.det(cam.R))
