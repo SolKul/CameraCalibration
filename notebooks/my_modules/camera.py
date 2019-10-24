@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.4'
-#       jupytext_version: 1.2.3
+#       jupytext_version: 1.2.4
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -17,9 +17,14 @@
 import numpy as np
 from scipy import linalg
 
-class camera:
+class Camera:
+    '''
+    カメラ行列Pを与えてカメラオブジェクトを作るモデル。
+    
+    Args:
+        P (array):カメラ行列P=K[R|t]。
+    '''
     def __init__(self,P):
-        '''カメラモデルP=K[R|t]を初期化する'''
         self.P=P
         self.K=None 
         self.R=None
@@ -41,6 +46,7 @@ class camera:
         return self.K, self.R, self.t
     
     def center(self):
+        """カメラ中心を計算して返す"""
         if self.c is not None:
             return self.c
         else:
@@ -54,10 +60,20 @@ def rotation_matrix(a):
     R[:3,:3] = linalg.expm([[0,-a[2],a[1]],[a[2],0,-a[0]],[-a[1],a[0],0]])
     return R
 
-def calculate_camera_matrix_w_sz(sz,sz_orig=(6000,4000),f_orig=(5266,5150)):
-    '''異なる解像度でのカメラ行列を計算する関数
-    (6000,4000)はα6000で24MPで撮影したときの解像度
-    (5266,5150)はα6000でSEL18200で焦点距離18のときの焦点距離'''
+def calculate_camera_matrix_w_sz(sz,sz_orig=(6000,4000),lens='PZ',f_orig=(4188,4186)):
+    """
+    異なる解像度でのカメラの内部パラメータKを計算する関数
+    Args:
+        sz (int):扱う画像サイズ。もともとの画像から縮小していた場合など。
+        sz_orig (int):(6000,4000)はα6000で24MPで撮影したときの解像度
+        lens (str): 'PZ'か'SEL'
+        f_orig (int):(5266,5150)はα6000でSEL18200で焦点距離18のときの焦点距離
+        (4188,4186)はPZ1650でズーム16のときの焦点距離
+    """
+    if(lens=='PZ'):
+        f_orig=(4188,4186)
+    elif(lens=='SEL'):
+        f_orig=(5266,5150)
     fx_orig,fy_orig=f_orig
     width,height=sz
     width_orig,height_orig=sz_orig
@@ -70,9 +86,21 @@ def calculate_camera_matrix_w_sz(sz,sz_orig=(6000,4000),f_orig=(5266,5150)):
 # -
 
 # カメラ行列の原理  
+# まずピンホールカメラモデルについて理解  
+# https://www.slideshare.net/ShoheiMori/ss-64994150  
+#
+# ついでに同次座標系について理解  
+# http://zellij.hatenablog.com/entry/20120523/p1  
+#
+# 要は座標を扱うときはその1次元上で扱うと便利という話  
+#
+# そしてopencv公式
+# https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html  
+#
 # ![カメラ行列の原理](https://docs.opencv.org/2.4/_images/pinhole_camera_model.png)
 
-# $$\lambda \boldsymbol{x}=P\boldsymbol{X}=K(R|t)\boldsymbol{X}$$
+# ## カメラ行列について
+#
 # $\boldsymbol{x}$:画像上の2次元座標
 # $$
 # \\
@@ -95,8 +123,23 @@ def calculate_camera_matrix_w_sz(sz,sz_orig=(6000,4000),f_orig=(5266,5150)):
 # \  \\
 # $$
 #
+# ピンホールカメラを用いると、3Dの点Xから画像上の点 x（どちらも同次座標で表現）への射影は
+# 次の式で表せます。
+# $$\lambda \boldsymbol{x}=P\boldsymbol{X}=K(R|t)\boldsymbol{X}$$
+# まずワールド座標系での3Dの点Xをカメラを中心とした座標系に
+# $$
+# (R|t)\boldsymbol{X}
+# $$
+# で射影します。  
+# $(R|t)$は$3\times4$なのでこの射影で同次座標系ではなく、普通の座標になるっぽい  
+#   
+#   
+# そして$K$で画像上の2次元座標に射影される  
+#   
+#
+#
 # $P=K(R|t)$  
-# $K$:カメラ行列  
+# $K$:内部パラメータ  
 # $$
 # \\
 # K=\left(\begin{array}{ccc}
@@ -106,9 +149,11 @@ def calculate_camera_matrix_w_sz(sz,sz_orig=(6000,4000),f_orig=(5266,5150)):
 # \end{array}\right)\\
 # \  \\
 # $$
+# $fx,fy$:焦点距離。厳密にはレンズの焦点距離とは違うので注意。縦横で異なることがあるのでfx,fy別になっている。  
+# $c_x,c_y$左端から、画像中心までの距離。$x$を左端からの座標系に戻すために必要  
 # $R$:回転行列(3×3)  
 # $t$:並行移動(3×1)  
-# $P$:Projection行列、3次元座標を画像上の2次元座標に射影する行列  
+# $P$:カメラ行列、3次元座標を画像上の2次元座標に射影する行列  
 # $\lambda,W$:よくわからん
 
 # 行列式と行列の積の関係

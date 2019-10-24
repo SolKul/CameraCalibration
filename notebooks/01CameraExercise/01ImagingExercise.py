@@ -16,19 +16,16 @@
 # %load_ext autoreload
 # %autoreload
 
-# +
-import sys
 import numpy as np
 import cv2
-sys.path.append('../90MyModule/')
-
-import image_processing as mip
-import desc_val as mdv
-import camera as mc
-import feature_detection as mfd
-# -
-
 import matplotlib.pyplot as plt
+
+#自作モジュール
+import image_processing as ip
+import desc_val as dv
+import camera
+import feature_detection as fd
+import homography
 
 
 def expand(image, ratio):
@@ -42,20 +39,16 @@ def expand(image, ratio):
 # +
 ratio=0.3
 
-img_for_camera_calibration=mip.imread('CalibrationImage/FeatureDetection00001.JPG')
+img_for_camera_calibration=ip.imread('CalibrationImage/FeatureDetection00001.JPG')
 im1=expand(img_for_camera_calibration,ratio)
 im1=im1[:int(4000*ratio),:int(6000*ratio)]
-mip.show_img(im1,show_axis=True)
+ip.show_img(im1,show_axis=True)
 
-img_math_test=mip.imread('CalibrationImage/FeatureDetection00003.JPG')
+img_math_test=ip.imread('CalibrationImage/FeatureDetection00003.JPG')
 im2=expand(img_math_test,ratio)
 im2=im2[:int(4000*ratio),:int(6000*ratio)]
-mip.show_img(im2,show_axis=True)
-# -
-
-
-
-# +
+ip.show_img(im2,show_axis=True)
+# + {}
 akaze = cv2.AKAZE_create()
 
 kp1, des1 = akaze.detectAndCompute(im1,None)
@@ -66,22 +59,144 @@ kp2, des2 = akaze.detectAndCompute(im2,None)
 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 matches = bf.match(des1, des2)
 matches = sorted(matches, key = lambda x:x.distance)
-img3 = cv2.drawMatches(im1, kp1, im2, kp2, matches[:100], None, flags=2)
-mip.show_img(img3,figsize=(20,30))
+img3 = cv2.drawMatches(im1, kp1, im2, kp2, matches[:10], None, flags=2)
+ip.show_img(img3,figsize=(20,30))
+# -
+
+im_draw=im1.copy()
+for i in range(10):
+    m=matches[i]
+    key_point_pt=kp1[m.queryIdx].pt
+    key_point_pt=tuple([int(value) for value in key_point_pt])
+    cv2.circle(im_draw,key_point_pt,100,(0,100,200),thickness=20)
+ip.show_img(im_draw)
+ip.imwrite('match_result_circle.jpg',im_draw)
+
+
+# 対応点を同次座標の点に変換する関数
+def convert_points(matches,kp1,kp2):
+#     ndx = matches.nonzero()[0]
+    fp=np.array([kp1[m.queryIdx].pt for m in matches])
+    fp = homography.make_homog(fp.T)
+#     ndx2 = [int(matches[i]) for i in ndx]
+    tp=np.array([kp2[m.trainIdx].pt for m in matches])
+    tp = homography.make_homog(tp.T)
+    return fp,tp
+
+
+# +
+# ホモグラフィーを推定
+model = homography.RansacModel()
+fp,tp = convert_points(matches,kp1,kp2)
+H,inlier=homography.H_from_ransac(fp,tp,model)
+
+inlier
+# -
+
+inl_matches=[matches[i] for i in inlier]
+img3 = cv2.drawMatches(im1, kp1, im2, kp2, inl_matches, None, flags=2)
+ip.show_img(img3,figsize=(20,30))
+ip.imwrite('inl_match.jpg',img3)
+
+np.vstack((fp,tp))
+
+# +
+MIN_MATCH_COUNT=10
+
+# Initiate AKAZE detector
+akaze = cv2.AKAZE_create()
+
+# find the keypoints and descriptors with AKAZE
+kp1, des1 = akaze.detectAndCompute(im1,None)
+kp2, des2 = akaze.detectAndCompute(im2,None)
+
+# FLANN parameters
+FLANN_INDEX_LSH = 6
+index_params= dict(algorithm         = FLANN_INDEX_LSH,
+                   table_number      = 6,  
+                   key_size          = 12,     
+                   multi_probe_level = 1) 
+search_params = dict(checks = 50)
+
+# ANNで近傍２位までを出力
+flann = cv2.FlannBasedMatcher(index_params, search_params)
+matches = flann.knnMatch(des1, des2,k=2)
+
+
+# store all the good matches as per Lowe's ratio test.
+good = []
+for m,n in matches:
+    if m.distance < 0.7*n.distance:
+        good.append(m)
+
+# +
+if len(good)>MIN_MATCH_COUNT:
+    src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+    dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+
+    M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+    matchesMask = mask.ravel().tolist()
+
+    h,w = im1.shape[:2]
+    pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+    dst = cv2.perspectiveTransform(pts,M)
+
+    img2 = cv2.polylines(im2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+
+else:
+    print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
+    matchesMask = None
+
+# +
+draw_params = dict(matchColor = (0,255,0), # draw matches in green color
+                   singlePointColor = None,
+                   matchesMask = matchesMask[:50], # draw only inliers
+                   flags = 2)
+
+img3 = cv2.drawMatches(im1,kp1,im2,kp2,good[:50],None,**draw_params)
+
+ip.show_img(img3,figsize=(20,30))
+ip.imwrite('inl_match.jpg',img3)
+# -
+
+len(good)
+
+len(good)
+
+# store all the good matches as per Lowe's ratio test.
+good = []
+for m,n in matches:
+    if m.distance < 0.7*n.distance:
+        good.append(m)
+
+search_params
+
+data=np.arange(24).reshape(6,-1)
+# data[:3,:]
+data
+
+for i in range(10):
+    m=matches[i]
+    key_point_pt=kp1[m.queryIdx].pt
+#     key_point_pt=tuple([int(value) for value in key_point_pt])
+
+
+# +
+
+tp=np.array([kp1[m.trainIdx].pt for m in matches[:100]])
 
 # +
 ratio=0.3
 
-img_for_camera_calibration=mip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
+img_for_camera_calibration=ip.imread('CalibrationImage/ImageforCameraCalibration.jpg')
 im1=expand(img_for_camera_calibration,ratio)
 im1=im1[:int(4000*ratio),:int(6000*ratio)]
-mip.show_img(im1,show_axis=True)
-# -
+ip.show_img(im1,show_axis=True)
 
-img_math_test=mip.imread('CalibrationImage/MatchTest.jpg')
+img_math_test=ip.imread('CalibrationImage/MatchTest.jpg')
 im2=expand(img_math_test,ratio)
 im2=im2[:int(4000*ratio),:int(6000*ratio)]
-mip.show_img(im2,show_axis=True)
+ip.show_img(im2,show_axis=True)
 
 # +
 akaze = cv2.AKAZE_create()
@@ -408,7 +523,7 @@ print('画像上で高さ%d、幅%d' % (height_in_image , width_in_image))
 # 縦216mm    
 # 横153mm  
 # 距離は720mm
-
+#
 # $f_x=\frac{dx}{dX}dZ$  
 # $f_y=\frac{dy}{dY}dZ$  
 
@@ -416,10 +531,14 @@ fx=width_in_image/153*720
 fy=height_in_image/216*720
 print('横方向の焦点距離f_x:%d\n縦方向の焦点距離f_y:%d' % (fx,fy))
 
+cv2.calibrateCamera()
+
+np.mgrid[:6,:9]
+
 K = np.array([[1000,0,500],[0,1000,300],[0,0,1]])
-tmp = rotation_matrix([0,0,1])[:3,:3]
+tmp = camera.rotation_matrix([0,0,1])[:3,:3]
 Rt = np.hstack((tmp,np.array([[50],[40],[30]])))
-cam = Camera(np.dot(K,Rt))
+cam = camera.camera(np.dot(K,Rt))
 print(K,'\n',Rt)
 cam.factor()
 print(cam.K,'\n',cam.R,'\n',np.linalg.det(cam.K),'\n',np.linalg.det(cam.R))
