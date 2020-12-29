@@ -5,7 +5,7 @@ FROM jupyter/minimal-notebook:1386e2046833
 USER root
 
 RUN apt update
-RUN apt install -y libgl1-mesa-dev=19.0.8-0ubuntu0~18.04.2
+RUN apt install -y libgl1-mesa-dev
 
 
 USER jovyan
