@@ -6,6 +6,18 @@
 勉強しながらコード書いていく環境と
 実際に運用する場は別
 
+## 起動方法
+
+- dockerを起動
+- Kitematicを起動
+- 当該コンテナを起動
+- localhost:8889にアクセス
+- Kitematicで共有化しているフォルダを調べ、VSCodeで開く
+- Gitの更新を管理する
+
+
+正直めんどくさすぎるからdevcontainerに移行したほうがいいと思う。
+
 ## 環境構築
 `/composer/confirmed`で`docker-compose build`で`camera_calibration:base`というimageを作成  
   
