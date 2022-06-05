@@ -1,0 +1,2 @@
+WORK_DIR=/host/working/directory/you/chose/
+HASHED_PASSWORD='argon2:$argon2id$v....`

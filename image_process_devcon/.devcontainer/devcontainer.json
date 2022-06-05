@@ -1,0 +1,11 @@
+{
+    "name": "jupyter-devcontainer-project",
+    "dockerComposeFile": [
+        "./docker-compose.yml"
+    ],
+    "service": "image_processing", //サービス名はdocker-compose.yml内のサービス名※2と一致させる
+	"extensions": [
+		"ms-python.python"
+    ],
+    "workspaceFolder": "/home/jovyan/work"
+} 
